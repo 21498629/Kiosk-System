@@ -51,7 +51,7 @@ namespace Kiosk.Models
             modelBuilder.Entity<Products>()
                 .HasOne(p => p.Supplier)        
                 .WithMany(s => s.Products)      
-                .HasForeignKey(p => p.SuppliersID) 
+                .HasForeignKey(p => p.SupplierID) 
                 .OnDelete(DeleteBehavior.SetNull);
 
         }

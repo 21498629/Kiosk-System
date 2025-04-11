@@ -32,9 +32,9 @@ namespace Kiosk.Models.Inventory
         public ProductCategories ProductCategory { get; set; }
 
         //[Required]
-        public int? SuppliersID { get; set; }
+        public int? SupplierID { get; set; }
 
-        [ForeignKey("SuppliersID")]
+        [ForeignKey("SupplierID")]
         public Suppliers Supplier { get; set; }
     }
 }

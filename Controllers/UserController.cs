@@ -115,6 +115,7 @@ namespace Kiosk.Controllers
             }
         }
 
+        // GET ALL USERS
         [HttpGet]
         [Route("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
@@ -138,7 +139,7 @@ namespace Kiosk.Controllers
             try
             {
                 var users = await _repository.GetUserAsync(UserID);
-                if (users == null) return NotFound("User role does not exist.");
+                if (users == null) return NotFound("User does not exist.");
                 return Ok(users);
             }
             catch (Exception ex)
@@ -205,8 +206,7 @@ namespace Kiosk.Controllers
             {
                 var existingUser = await _repository.GetUserAsync(UserID);
 
-                // fix error message
-                if (existingUser == null) return NotFound($"The user role does not exist");
+                if (existingUser == null) return NotFound($"The user does not exist");
 
                 existingUser.Name = uvm.Name;
                 existingUser.Surname = uvm.Surname;
@@ -236,8 +236,7 @@ namespace Kiosk.Controllers
             {
                 var existingUser = await _repository.GetUserAsync(UserID);
 
-                // fix error message
-                if (existingUser == null) return NotFound($"The user role does not exist");
+                if (existingUser == null) return NotFound($"The user does not exist");
 
                 _repository.Delete(existingUser);
 

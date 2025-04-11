@@ -1,4 +1,5 @@
 ﻿using Kiosk.Models.Inventory;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kiosk.View_Models.Inventory
@@ -14,7 +15,9 @@ namespace Kiosk.View_Models.Inventory
         public int Quantity { get; set; }
         public bool IsActive { get; set; }
 
-        public List<Suppliers> Suppliers { get; set; } = new List<Suppliers>();
-        public List<ProductCategories> ProductCategories { get; set; } = new List<ProductCategories>();
+        [Required]
+        public int CategoryID { get; set; }
+        [Required]
+        public int SupplierID { get; set; }
     }
 }

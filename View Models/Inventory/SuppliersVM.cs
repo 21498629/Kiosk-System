@@ -7,10 +7,12 @@ namespace Kiosk.View_Models.Inventory
     {
         public int SupplierID { get; set; }
         public string Name { get; set; } = string.Empty;
+        [EmailAddress]
         public string? Email_Address { get; set; }
         public string? Physical_Address { get; set; }
         public string PhoneNumber { get; set; } = string.Empty;
 
-        public List<SupplierRepresentatives> SupplierRepresentatives { get; set; } = new List<SupplierRepresentatives>();
+        [Required]
+        public int RepresentativeID { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Kiosk.View_Models.Inventory
 {
-    public class ProductCategoriesVM
+    public class ProductCategoryVM
     {
         public int CategoryID { get; set; }
         public string Name { get; set; } = string.Empty;

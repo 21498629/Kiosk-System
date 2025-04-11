@@ -17,6 +17,7 @@ namespace Kiosk.Controllers
             _repository = repository;
         }
 
+        // GET ALL USER ROLES
         [HttpGet]
         [Route("GetAllUserRoles")]
         public async Task<IActionResult> GetAllUserRoles()
@@ -83,7 +84,6 @@ namespace Kiosk.Controllers
             {
                 var existingRole = await _repository.GetUserRoleAsync(RoleID);
 
-                // fix error message
                 if (existingRole == null) return NotFound($"The user role does not exist");
 
                 existingRole.Name = rvm.Name;
@@ -110,7 +110,6 @@ namespace Kiosk.Controllers
             {
                 var existingRole = await _repository.GetUserRoleAsync(RoleID);
 
-                // fix error message
                 if (existingRole == null) return NotFound($"The user role does not exist");
 
                 _repository.Delete(existingRole);
