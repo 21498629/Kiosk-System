@@ -42,14 +42,14 @@ namespace Kiosk.Models
             IQueryable<Users> query = _appDbContext.User;
             return await query.FirstOrDefaultAsync();
         }
-        public async Task<UserRole[]> GetAllUserRolesAsync()
+        public async Task<UserRoles[]> GetAllUserRolesAsync()
         {
-            IQueryable<UserRole> query = _appDbContext.UserRole;
+            IQueryable<UserRoles> query = _appDbContext.UserRole;
             return await query.ToArrayAsync();
         }
-        public async Task<UserRole> GetUserRoleAsync(int roleID)
+        public async Task<UserRoles> GetUserRoleAsync(int roleID)
         {
-            IQueryable<UserRole> query = _appDbContext.UserRole;
+            IQueryable<UserRoles> query = _appDbContext.UserRole;
             return await query.FirstOrDefaultAsync();
         }
 

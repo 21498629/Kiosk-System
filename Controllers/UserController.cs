@@ -13,6 +13,7 @@ using Kiosk.View_Models.User;
 using NuGet.Protocol.Core.Types;
 using System.Net.Mail;
 using System.Net.NetworkInformation;
+using System.Data.Entity;
 
 namespace Kiosk.Controllers
 {
@@ -21,10 +22,97 @@ namespace Kiosk.Controllers
     public class UserController : ControllerBase
     {
         private readonly IRepository _repository;
+        private readonly UserManager<Users> _userManager;
+        private readonly ITokenService _tokenService;
+        private readonly SignInManager<Users> _signInManager;
+        private readonly AppDbContext _appDbContext;
 
-        public UserController(IRepository repository)
+        public UserController(IRepository repository, UserManager<Users> userManager, ITokenService tokenService, SignInManager<Users> signInManager, AppDbContext appDbContext)
         {
             _repository = repository;
+            _userManager = userManager;
+            _tokenService = tokenService;
+            _signInManager = signInManager;
+            _appDbContext = appDbContext;
+        }
+
+        // REGISTER
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register([FromBody] UserVM uvm)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                if (string.IsNullOrEmpty(uvm.Password))
+                    return BadRequest(new { message = "Password is required" });
+
+                var user = new Users
+                {
+                    Name = uvm.Name,
+                    Surname = uvm.Surname,
+                    Email = uvm.EmailAddress,
+                    UserName = uvm.UserName,
+                    PhysicalAddress = uvm.PhysicalAddress,
+                    PhoneNumber = uvm.PhoneNumber,
+                    SignupDate = uvm.SignupDate,
+                    UserRoleID = uvm.UserRoleID,
+                    PasswordHash = uvm.Password,
+                };
+                 
+                var createdUser = await _userManager.CreateAsync(user, uvm.Password);
+
+                var role = await _appDbContext.UserRole.FindAsync(uvm.UserRoleID);
+                if (role == null)
+                    return BadRequest("Invalid role selected.");
+
+
+                if (createdUser.Succeeded)
+                    return Ok("User Created");
+                
+                else
+                {
+                    return StatusCode(500, createdUser.Errors);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.InnerException?.Message);
+            }
+        }
+
+        // LOGIN
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(LoginVM lvm)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == lvm.EmailAddress.ToLower());
+
+                if ( user == null)
+                {
+                    return Unauthorized("Invalid Email Address");
+                }
+
+                var result = await _signInManager.CheckPasswordSignInAsync(user, lvm.Password, false);
+
+                if (!result.Succeeded)
+                {
+                    return Unauthorized("Email Address not found and/or Password incorrect.");
+                }
+
+                return Ok(user);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
@@ -36,9 +124,9 @@ namespace Kiosk.Controllers
                 var results = await _repository.GetAllUsersAsync();
                 return Ok(results);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Internal Server Error. Please contact support.");
+                return BadRequest(ex.Message);
             }
         }
 
@@ -53,9 +141,9 @@ namespace Kiosk.Controllers
                 if (users == null) return NotFound("User role does not exist.");
                 return Ok(users);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Enter some error message");
+                return BadRequest(ex.Message);
             }
 
         }
@@ -65,30 +153,47 @@ namespace Kiosk.Controllers
         [Route("AddUser")]
         public async Task<IActionResult> AddUser(UserVM uvm)
         {
-            var user = new Users 
-            { 
-                Name = uvm.Name,
-                Surname = uvm.Surname,
-                EmailAddress = uvm.EmailAddress,
-                PhysicalAddress = uvm.PhysicalAddress,
-                Password = uvm.Password,
-                SignupDate = uvm.SignupDate,
-                UserRole = uvm.UserRole,
-
-            };
-
             try
             {
-                _repository.Add(user);
-                await _repository.SaveChangesAsync();
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                if (string.IsNullOrEmpty(uvm.Password))
+                    return BadRequest(new { message = "Password is required" });
+
+                var user = new Users
+                {
+                    Name = uvm.Name,
+                    Surname = uvm.Surname,
+                    Email = uvm.EmailAddress,
+                    UserName = uvm.UserName,
+                    PhysicalAddress = uvm.PhysicalAddress,
+                    PhoneNumber = uvm.PhoneNumber,
+                    SignupDate = uvm.SignupDate,
+                    UserRoleID = uvm.UserRoleID,
+                    PasswordHash = uvm.Password,
+                };
+
+                var createdUser = await _userManager.CreateAsync(user, uvm.Password);
+
+                var role = await _appDbContext.UserRole.FindAsync(uvm.UserRoleID);
+                if (role == null)
+                    return BadRequest("Invalid role selected.");
+
+
+                if (createdUser.Succeeded)
+                    return Ok("User Created");
+
+                else
+                {
+                    return StatusCode(500, createdUser.Errors);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // fix error message
-                return BadRequest("Invalid Transaction");
+                return BadRequest(ex.InnerException?.Message);
             }
 
-            return Ok(user);
         }
 
         // EDIT USER
@@ -105,20 +210,19 @@ namespace Kiosk.Controllers
 
                 existingUser.Name = uvm.Name;
                 existingUser.Surname = uvm.Surname;
-                existingUser.EmailAddress = uvm.EmailAddress;
-                existingUser.EmailAddress = uvm.EmailAddress;
+                existingUser.Email = uvm.EmailAddress;
                 existingUser.PhysicalAddress = uvm.PhysicalAddress;
-                existingUser.Password = uvm.Password;
-                existingUser.UserRole = uvm.UserRole;
+                existingUser.PasswordHash = uvm.Password;
+                existingUser.UserRoleID = uvm.UserRoleID;
 
                 if (await _repository.SaveChangesAsync())
                 {
                     return Ok(existingUser);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error. Please contact support.");
+                return BadRequest(ex.Message);
             }
             return BadRequest("Your request is invalid");
         }
@@ -143,9 +247,9 @@ namespace Kiosk.Controllers
                 }
                 ;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error. Please contact support.");
+                return BadRequest(ex.Message);
             }
             return BadRequest("Your request is invalid");
         }

@@ -8,6 +8,9 @@ using Kiosk.View_Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// APPSETTINGS.JSON FILE
+//builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
 // ITOKEN SERVICE
 builder.Services.AddScoped<ITokenService, TokenService>();
 
@@ -17,6 +20,8 @@ builder.Services.AddScoped<IRepository, Repository>();
 // connection to database
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
+    var conn = builder.Configuration.GetConnectionString("DefaultConnection");
+    Console.WriteLine($"[DEBUG] Connection string : {conn}");
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 

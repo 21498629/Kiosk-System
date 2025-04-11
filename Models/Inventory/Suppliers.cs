@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using Kiosk.Models.User;
 
 namespace Kiosk.Models.Inventory
 {
@@ -17,7 +19,12 @@ namespace Kiosk.Models.Inventory
         [StringLength(10)]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        public List<SupplierRepresentatives> SupplierRepresentatives { get; set; } = new List<SupplierRepresentatives>();
-        //public List<Products> Products { get; set; } = new List<Products>();
+        public ICollection<Products> Products { get; set; } = new List<Products>();
+
+        [Required]
+        public int RepresentativeID { get; set; }
+
+        [ForeignKey("RepresentativeID")]
+        public SupplierRepresentatives SupplierRepresentative { get; set; }
     }
 }

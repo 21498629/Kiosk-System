@@ -19,25 +19,42 @@ namespace Kiosk.Models
 
         // USER
         public DbSet<Users> User { get; set; }
-        public DbSet<UserRole> UserRole { get; set; }
+        public DbSet<UserRoles> UserRole { get; set; }
 
         // FOERIGN KEY RELATIONSHIPS
-        /*protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Products>()
-                .HasOne(p => p.ProductCategories)
-                .WithMany(b => b.Products)
-                .HasForeignKey(p => p.BlogUrl)
-                .HasPrincipalKey(b => b.Url);
+            // USERS AND USER ROLES
 
             modelBuilder.Entity<Users>()
-                .HasMany(t => t.UserRole)
+                .HasOne(t => t.UserRole)
                 .WithMany(g => g.Users)
-                .UsingEntity<Users_UserRole>
-                 (tg => tg.HasOne<User_Role>().WithMany(),
-                  tg => tg.HasOne<Access>().WithMany());
-        }*/
-        
+                .HasForeignKey(u => u.UserRoleID);
+
+            // SUPPLIERS AND SUPPLIER REPRESENTATIVES
+
+            modelBuilder.Entity<Suppliers>()
+                .HasOne(t => t.SupplierRepresentative)
+                .WithMany(g => g.Suppliers)
+                .HasForeignKey(u => u.RepresentativeID);
+
+            // PRODUCTS AND PRODUCT CATEGORIES
+
+            modelBuilder.Entity<Products>()
+           .HasOne(p => p.ProductCategory)  
+           .WithMany(c => c.Products)      
+           .HasForeignKey(p => p.CategoryID) 
+           .OnDelete(DeleteBehavior.Restrict); 
+
+            // PRODUCTS AND SUPPLIERS
+
+            modelBuilder.Entity<Products>()
+                .HasOne(p => p.Supplier)        
+                .WithMany(s => s.Products)      
+                .HasForeignKey(p => p.SuppliersID) 
+                .OnDelete(DeleteBehavior.SetNull);
+
+        }
     }
 
 }

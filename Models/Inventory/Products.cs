@@ -16,7 +16,7 @@ namespace Kiosk.Models.Inventory
         [Required]
         public string Description { get; set; } = string.Empty ;
         [Required]
-        [Column(TypeName = " decimal(5, 2")]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal Price { get; set; }
         [Required]
         public byte[] Image { get; set; }
@@ -25,7 +25,16 @@ namespace Kiosk.Models.Inventory
         [Required]
         public bool IsActive { get; set; }
 
-        public List<Suppliers> Suppliers { get; set; } = new List<Suppliers>();
-        public List<ProductCategories> ProductCategories { get; set; } = new List<ProductCategories>();
+        [Required]
+        public int CategoryID { get; set; }
+
+        [ForeignKey("CategoryID")]
+        public ProductCategories ProductCategory { get; set; }
+
+        //[Required]
+        public int? SuppliersID { get; set; }
+
+        [ForeignKey("SuppliersID")]
+        public Suppliers Supplier { get; set; }
     }
 }

@@ -12,8 +12,8 @@ namespace Kiosk.Models
         // USER
         Task<Users[]> GetAllUsersAsync();
         Task<Users> GetUserAsync(int userID);
-        Task<UserRole[]> GetAllUserRolesAsync();
-        Task<UserRole> GetUserRoleAsync(int roleID);
+        Task<UserRoles[]> GetAllUserRolesAsync();
+        Task<UserRoles> GetUserRoleAsync(int roleID);
 
         // INVENTORY
 

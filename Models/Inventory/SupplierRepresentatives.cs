@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Kiosk.Models.User;
 
 namespace Kiosk.Models.Inventory
 {
@@ -17,5 +18,7 @@ namespace Kiosk.Models.Inventory
         public string EmailAddress { get; set; } = string.Empty;
         [StringLength(10)]
         public string PhoneNumber { get; set; } = string.Empty;
+
+        public ICollection<Suppliers> Suppliers { get; set; } = new List<Suppliers>();
     }
 }

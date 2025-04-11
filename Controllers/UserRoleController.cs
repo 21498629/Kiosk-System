@@ -26,9 +26,9 @@ namespace Kiosk.Controllers
                 var results = await _repository.GetAllUserRolesAsync();
                 return Ok(results);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Internal Server Error. Please contact support.");
+                return BadRequest(ex.Message);
             }
         }
 
@@ -43,9 +43,9 @@ namespace Kiosk.Controllers
                 if (roles == null) return NotFound("User role does not exist.");
                 return Ok(roles);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Enter some error message");
+                return BadRequest(ex.Message);
             }
 
         }
@@ -55,9 +55,8 @@ namespace Kiosk.Controllers
         [Route("AddUserRole")]
         public async Task<IActionResult> AddUserRole(UserRoleVM rvm)
         {
-            var role = new UserRole
+            var role = new UserRoles
             {
-                RoleID = rvm.RoleID,
                 Name = rvm.Name,
                 Description = rvm.Description
             };
@@ -95,9 +94,9 @@ namespace Kiosk.Controllers
                     return Ok(existingRole);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error. Please contact support.");
+                return BadRequest(ex.Message);
             }
             return BadRequest("Your request is invalid");
         }
@@ -122,9 +121,9 @@ namespace Kiosk.Controllers
                 }
                 ;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error. Please contact support.");
+                return BadRequest(ex.Message);
             }
             return BadRequest("Your request is invalid");
         }
