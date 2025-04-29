@@ -10,8 +10,11 @@ namespace Kiosk.View_Models.Inventory
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         [Column(TypeName = " decimal(5, 2")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be a postive value.")]
         public decimal Price { get; set; }
-        public byte[] Image { get; set; }
+        [NotMapped]
+        [Required(ErrorMessage = "Please select an image")]
+        public IFormFile ImageFile { get; set; }
         public int Quantity { get; set; }
         public bool IsActive { get; set; }
 

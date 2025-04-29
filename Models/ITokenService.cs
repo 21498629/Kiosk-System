@@ -1,6 +1,6 @@
 ﻿using Kiosk.Models.User;
 
-namespace Kiosk.View_Models
+namespace Kiosk.Models
 {
     public interface ITokenService
     {

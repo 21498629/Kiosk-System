@@ -1,5 +1,7 @@
 ﻿using Kiosk.Models.User;
 using Kiosk.Models.Inventory;
+using System.Linq.Expressions;
+using Microsoft.AspNetCore.Identity;
 
 namespace Kiosk.Models
 {
@@ -12,14 +14,16 @@ namespace Kiosk.Models
         // USER
         Task<Users[]> GetAllUsersAsync();
         Task<Users> GetUserAsync(int userID);
-        Task<UserRoles[]> GetAllUserRolesAsync();
-        Task<UserRoles> GetUserRoleAsync(int roleID);
+
+        // USER  ROLES
+        
 
         // INVENTORY
 
         // PRODUCTS
         Task<Products[]> GetAllProductsAsync();
         Task<Products> GetProductAsync(int productID);
+        Task<Products[]> GetProductsByCategoryAsync(int categoryID);
         Task<ProductCategories[]> GetAllProductCategoriesAsync();
         Task<ProductCategories> GetProductCategoryAsync(int productCategoryID);
 

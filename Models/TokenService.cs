@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using System.Text;
 using Kiosk.Models.User;
-using Kiosk.View_Models;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Kiosk.Models
@@ -12,7 +11,7 @@ namespace Kiosk.Models
         private readonly IConfiguration _config;
         private readonly SymmetricSecurityKey _key;
 
-        public TokenService(IConfiguration config) 
+        public TokenService(IConfiguration config, AppDbContext appDbContext) 
         { 
             _config = config;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SigningKey"]));
@@ -20,12 +19,10 @@ namespace Kiosk.Models
 
         public string CreateToken(Users user)
         {
-            throw new NotImplementedException();
-
-            var claims = new List<Claim>
+            var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.GivenName, user.UserName),
+                //new Claim(JwtRegisteredClaimNames.Role, user.Role),
             };
 
             var cred = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);

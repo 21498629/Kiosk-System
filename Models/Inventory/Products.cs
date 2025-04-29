@@ -17,9 +17,10 @@ namespace Kiosk.Models.Inventory
         public string Description { get; set; } = string.Empty ;
         [Required]
         [Column(TypeName = "decimal(5,2)")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be a postive value.")]
         public decimal Price { get; set; }
         [Required]
-        public byte[] Image { get; set; }
+        public string Image { get; set; }
         [Required]
         public int Quantity { get; set; }
         [Required]

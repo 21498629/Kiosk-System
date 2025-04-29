@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Kiosk.Models;
-using Kiosk.View_Models;
 using Kiosk.Models.User;
 using Kiosk.View_Models.User;
 using NuGet.Protocol.Core.Types;
 using System.Net.Mail;
 using System.Net.NetworkInformation;
 using System.Data.Entity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Kiosk.Controllers
 {
@@ -23,14 +23,16 @@ namespace Kiosk.Controllers
     {
         private readonly IRepository _repository;
         private readonly UserManager<Users> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;  
         private readonly ITokenService _tokenService;
         private readonly SignInManager<Users> _signInManager;
         private readonly AppDbContext _appDbContext;
 
-        public UserController(IRepository repository, UserManager<Users> userManager, ITokenService tokenService, SignInManager<Users> signInManager, AppDbContext appDbContext)
+        public UserController(IRepository repository, UserManager<Users> userManager, RoleManager<IdentityRole> roleManager, ITokenService tokenService, SignInManager<Users> signInManager, AppDbContext appDbContext)
         {
             _repository = repository;
             _userManager = userManager;
+            _roleManager = roleManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
             _appDbContext = appDbContext;
@@ -58,23 +60,33 @@ namespace Kiosk.Controllers
                     PhysicalAddress = uvm.PhysicalAddress,
                     PhoneNumber = uvm.PhoneNumber,
                     SignupDate = uvm.SignupDate,
-                    UserRoleID = uvm.UserRoleID,
                     PasswordHash = uvm.Password,
                 };
-                 
+
                 var createdUser = await _userManager.CreateAsync(user, uvm.Password);
 
-                var role = await _appDbContext.UserRole.FindAsync(uvm.UserRoleID);
-                if (role == null)
-                    return BadRequest("Invalid role selected.");
-
-
                 if (createdUser.Succeeded)
-                    return Ok("User Created");
+                { 
+                    var roleResult = await _userManager.AddToRoleAsync(user, "User");
+                    if (roleResult.Succeeded)
+                    {
+                        return Ok(
+                            new UserVM
+                            {
+                            Name = user.Name,
+                            Token = _tokenService.CreateToken(user)
+                            }
+                        );
+                    }
+                    else
+                    {
+                        return StatusCode(500, roleResult.Errors);
+                    }
+                }
                 
                 else
                 {
-                    return StatusCode(500, createdUser.Errors);
+                    return BadRequest(createdUser.Errors);
                 }
             }
             catch (Exception ex)
@@ -92,7 +104,9 @@ namespace Kiosk.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == lvm.EmailAddress.ToLower());
+                //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == lvm.EmailAddress.ToLower());
+
+                var user = await _userManager.FindByEmailAsync(lvm.EmailAddress.ToLower());
 
                 if ( user == null)
                 {
@@ -106,7 +120,11 @@ namespace Kiosk.Controllers
                     return Unauthorized("Email Address not found and/or Password incorrect.");
                 }
 
-                return Ok(user);
+                return Ok(new
+                {
+                    user.UserName,
+                    Token = _tokenService.CreateToken(user),
+                });
 
             }
             catch (Exception ex)
@@ -115,6 +133,7 @@ namespace Kiosk.Controllers
             }
         }
 
+        //[Authorize(Roles = "SuperUser")]
         // GET ALL USERS
         [HttpGet]
         [Route("GetAllUsers")]
@@ -150,6 +169,7 @@ namespace Kiosk.Controllers
         }
 
         // ADD USER
+        //[Authorize]
         [HttpPost]
         [Route("AddUser")]
         public async Task<IActionResult> AddUser(UserVM uvm)
@@ -171,19 +191,31 @@ namespace Kiosk.Controllers
                     PhysicalAddress = uvm.PhysicalAddress,
                     PhoneNumber = uvm.PhoneNumber,
                     SignupDate = uvm.SignupDate,
-                    UserRoleID = uvm.UserRoleID,
                     PasswordHash = uvm.Password,
                 };
 
                 var createdUser = await _userManager.CreateAsync(user, uvm.Password);
 
-                var role = await _appDbContext.UserRole.FindAsync(uvm.UserRoleID);
-                if (role == null)
-                    return BadRequest("Invalid role selected.");
-
-
                 if (createdUser.Succeeded)
-                    return Ok("User Created");
+                {
+                    if (!string.IsNullOrEmpty(uvm.RoleName))
+                    {
+                        var roleExists = await _roleManager.RoleExistsAsync(uvm.RoleName);
+                        if (!roleExists)
+                            return BadRequest("Specified role does not exists");
+
+                        var addToRoleResult = await _userManager.AddToRoleAsync(user, uvm.RoleName);
+                        if (!addToRoleResult.Succeeded)
+                            return BadRequest(addToRoleResult.Errors);
+                    }
+                    return Ok(
+                        new UserVM
+                        {
+                            Name = user.Name,
+                            Token = _tokenService.CreateToken(user)
+                        }
+                    );
+                }
 
                 else
                 {
@@ -213,7 +245,7 @@ namespace Kiosk.Controllers
                 existingUser.Email = uvm.EmailAddress;
                 existingUser.PhysicalAddress = uvm.PhysicalAddress;
                 existingUser.PasswordHash = uvm.Password;
-                existingUser.UserRoleID = uvm.UserRoleID;
+                //existingUser.UserRoleID = uvm.UserRoleID;
 
                 if (await _repository.SaveChangesAsync())
                 {

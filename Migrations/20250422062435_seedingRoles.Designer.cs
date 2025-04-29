@@ -4,6 +4,7 @@ using Kiosk.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kiosk.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250422062435_seedingRoles")]
+    partial class seedingRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -232,20 +235,20 @@ namespace Kiosk.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a4e5f6g7-8h9i-0j1k-2l3m-a4e5f6g7h8i9",
+                            Id = "1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "judfs-dsfdkbfsde-fvsdjklbn",
+                            ConcurrencyStamp = "9203039b-73b5-497f-b353-d1d8fc4a9aff",
                             Email = "admin@admin.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             Name = "Admin",
                             NormalizedEmail = "ADMIN@ADMIN.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEI6SvcfAYWbmjT1X9EViDpDjyHXIa0WOBWInexSSWWyZc2m4VObVFUeyUiOc90j8Fw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEE7QPqiftvXvciNq0kPgF+Mdav3rzYccIjyn74kH2NYtO3OqRCkt1vn5Q2o2IWSMcg==",
                             PhoneNumber = "0123456789",
                             PhoneNumberConfirmed = false,
                             PhysicalAddress = "Admin",
-                            SecurityStamp = "dheu48yu9jb sk-0efojrf-basdckj",
+                            SecurityStamp = "599066dc-232a-4da1-95d4-2034f9677f09",
                             SignupDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Surname = "Admin",
                             TwoFactorEnabled = false,
@@ -283,21 +286,21 @@ namespace Kiosk.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "kgbasdcsfv-dasdjgbf-ascfb",
+                            ConcurrencyStamp = "59dfe680-9be4-4485-86ef-77c661f63b3a",
                             Name = "Superuser",
                             NormalizedName = "SUPERUSER"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "kjdbhszf-sdflobnljfc-fszdnvd",
+                            ConcurrencyStamp = "6fa03aa2-6665-4490-9d8b-7ad8ba47d72b",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "3",
-                            ConcurrencyStamp = "ljsdhfv-lkjbhdfs-kjbhdsueh",
+                            ConcurrencyStamp = "3d41617a-4d33-4140-a62c-661aeea45989",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -392,7 +395,7 @@ namespace Kiosk.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = "a4e5f6g7-8h9i-0j1k-2l3m-a4e5f6g7h8i9",
+                            UserId = "1",
                             RoleId = "1"
                         });
                 });

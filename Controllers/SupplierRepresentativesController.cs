@@ -42,7 +42,7 @@ namespace Kiosk.Controllers
 
         // GET SUPPLIER REPRESENTATIVE BY ID
         [HttpGet]
-        [Route("GetSupplierRepresentative/{(RepresentativeID}")]
+        [Route("GetSupplierRepresentative/{RepresentativeID}")]
         public async Task<ActionResult> GetSupplierRepresentatives(int RepresentativeID)
         {
             try

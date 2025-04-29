@@ -1,16 +1,22 @@
 ﻿using Kiosk.Models.User;
 using Kiosk.Models.Inventory;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using Microsoft.AspNetCore.Identity;
 
 namespace Kiosk.Models
 {
     public class Repository : IRepository
     {
         private readonly AppDbContext _appDbContext;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<Users> _userManager;
 
-        public Repository(AppDbContext appDbContext)
+        public Repository(AppDbContext appDbContext, RoleManager<IdentityRole> roleManager, UserManager<Users> userManager)
         {
             _appDbContext = appDbContext;
+            _roleManager = roleManager;
+            _userManager = userManager;
         }
 
         // Saving Changes
@@ -42,16 +48,6 @@ namespace Kiosk.Models
             IQueryable<Users> query = _appDbContext.User;
             return await query.FirstOrDefaultAsync();
         }
-        public async Task<UserRoles[]> GetAllUserRolesAsync()
-        {
-            IQueryable<UserRoles> query = _appDbContext.UserRole;
-            return await query.ToArrayAsync();
-        }
-        public async Task<UserRoles> GetUserRoleAsync(int roleID)
-        {
-            IQueryable<UserRoles> query = _appDbContext.UserRole;
-            return await query.FirstOrDefaultAsync();
-        }
 
         // INVENTORY
 
@@ -77,6 +73,12 @@ namespace Kiosk.Models
             return await query.FirstOrDefaultAsync();
         }
 
+        public async Task<Products[]> GetProductsByCategoryAsync(int categoryID)
+        {
+            IQueryable<Products> query = _appDbContext.Products.Where(p => p.CategoryID == categoryID);
+            return await query.ToArrayAsync();
+        }
+
         // SUPPLIERS
         public async Task<Suppliers[]> GetAllSuppliersAsync()
         {
@@ -98,6 +100,8 @@ namespace Kiosk.Models
             IQueryable<SupplierRepresentatives> query = _appDbContext.SupplierRepresentatives.Where(p => p.RepresentativeID == representativeID);
             return await query.FirstOrDefaultAsync();
         }
+
+        // USER ROLES
 
     }
 }

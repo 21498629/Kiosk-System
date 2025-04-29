@@ -1,31 +1,43 @@
 ﻿using Kiosk.Models;
 using Kiosk.Models.User;
 using Kiosk.View_Models.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Kiosk.Controllers
 {
+    //[Authorize(Roles = "Superuser")]
     [Route("api/[controller]")]
     [ApiController]
     public class UserRoleController : ControllerBase
     {
-        private readonly IRepository _repository;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<Users> _userManager;
+        private readonly AppDbContext _appDbContext;
 
-        public UserRoleController(IRepository repository)
+        public UserRoleController(RoleManager<IdentityRole> roleManager, UserManager<Users> userManager, AppDbContext appDbContext)
         {
-            _repository = repository;
+            _roleManager = roleManager;
+            _userManager = userManager;
+            _appDbContext = appDbContext;
         }
 
         // GET ALL USER ROLES
         [HttpGet]
-        [Route("GetAllUserRoles")]
-        public async Task<IActionResult> GetAllUserRoles()
+        [Route("GetAllRoles")]
+        public async Task<IActionResult> GetAllRoles()
         {
             try
             {
-                var results = await _repository.GetAllUserRolesAsync();
-                return Ok(results);
+                var roles = _roleManager.Roles.Select(r => new RoleVM
+                {
+                    RoleID = r.Id,
+                    Name = r.Name
+                }).ToList();
+                return Ok(roles);
             }
             catch (Exception ex)
             {
@@ -35,14 +47,14 @@ namespace Kiosk.Controllers
 
         // GET USER ROLE BY ID
         [HttpGet]
-        [Route("GetUserRole/{RoleID}")]
-        public async Task<ActionResult> GetUserRole(int RoleID)
+        [Route("GetRole/{RoleID}")]
+        public async Task<ActionResult> GetRole(string RoleID)
         {
             try
             {
-                var roles = await _repository.GetUserRoleAsync(RoleID);
-                if (roles == null) return NotFound("User role does not exist.");
-                return Ok(roles);
+                var role = await _roleManager.FindByIdAsync(RoleID);
+                if (role == null) return NotFound("User role does not exist.");
+                return Ok(role);
             }
             catch (Exception ex)
             {
@@ -53,78 +65,56 @@ namespace Kiosk.Controllers
 
         // ADD USER ROLE
         [HttpPost]
-        [Route("AddUserRole")]
-        public async Task<IActionResult> AddUserRole(UserRoleVM rvm)
+        [Route("AddRole")]
+        public async Task<IActionResult> AddRole([FromBody] RoleVM rvm)
         {
-            var role = new UserRoles
-            {
-                Name = rvm.Name,
-                Description = rvm.Description
-            };
+            if (!ModelState.IsValid) 
+                return BadRequest(ModelState);
 
-            try
-            {
-                _repository.Add(role);
-                await _repository.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"An error occurred: {ex.Message}");
-            }
+            var role = new IdentityRole(rvm.Name);
+            var result = await _roleManager.CreateAsync(role);
+            
+            if (result.Succeeded)
+                return CreatedAtAction(nameof(GetAllRoles), new { id = role.Id }, new RoleVM { RoleID = role.Id, Name = role.Name });
 
-            return Ok(role);
+            return BadRequest(result.Errors);
         }
 
         // EDIT USER ROLE
         [HttpPut]
-        [Route("EditUserRole/{RoleID}")]
-        public async Task<ActionResult<UserRoleVM>> EditUserRole(int RoleID, UserRoleVM rvm)
+        [Route("EditRole/{RoleID}")]
+        public async Task<ActionResult> EditRole(string RoleID, [FromBody] RoleVM rvm)
         {
-            try
-            {
-                var existingRole = await _repository.GetUserRoleAsync(RoleID);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-                if (existingRole == null) return NotFound($"The user role does not exist");
+            var role = await _roleManager.FindByIdAsync(RoleID);
+            if (role == null)
+                return NotFound();
 
-                existingRole.Name = rvm.Name;
-                existingRole.Description = rvm.Description;
+            role.Name = rvm.Name;
+            var result = await _roleManager.UpdateAsync(role);
 
-                if (await _repository.SaveChangesAsync())
-                {
-                    return Ok(existingRole);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            return BadRequest("Your request is invalid");
+            if (result.Succeeded)
+                return NoContent();
+
+            return BadRequest(result.Errors);
         }
 
         // DELETE USER ROLE
         [HttpDelete]
         [Route("DeleteUserRole/{RoleID}")]
-        public async Task<IActionResult> DeleteUserRole(int RoleID)
+        public async Task<IActionResult> DeleteRole(string RoleID)
         {
-            try
-            {
-                var existingRole = await _repository.GetUserRoleAsync(RoleID);
+            var existingRole = await _roleManager.FindByIdAsync(RoleID);
+            if (existingRole == null)
+                return NotFound();
 
-                if (existingRole == null) return NotFound($"The user role does not exist");
+            var result = await _roleManager.DeleteAsync(existingRole);
+            if (result.Succeeded)
+                return NoContent();
 
-                _repository.Delete(existingRole);
-
-                if (await _repository.SaveChangesAsync())
-                {
-                    return Ok(existingRole);
-                }
-                ;
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            return BadRequest("Your request is invalid");
+            return BadRequest(result.Errors);
         }
     }
 }

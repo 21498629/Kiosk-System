@@ -18,11 +18,5 @@ namespace Kiosk.Models.User
         public string PhysicalAddress { get; set; }
         [Required]
         public DateTime SignupDate { get; set; }
-
-        [Required]
-        public int UserRoleID { get; set; }
-
-        [ForeignKey("UserRoleID")]
-        public UserRoles UserRole { get; set; }
     }
 }

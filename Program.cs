@@ -4,12 +4,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Kiosk.Models;
 using Kiosk.Models.User;
-using Kiosk.View_Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// APPSETTINGS.JSON FILE
-//builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        builder => builder
+        .WithOrigins("http://localhost:3000")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
+});
 
 // ITOKEN SERVICE
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -33,8 +39,10 @@ builder.Services.AddIdentity<Users, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 10;
-}) 
-  .AddEntityFrameworkStores<AppDbContext>();
+})
+  .AddRoles<IdentityRole>()
+  .AddEntityFrameworkStores<AppDbContext>()
+  .AddDefaultTokenProviders();
 
 // JWT
 builder.Services.AddAuthentication(options =>
@@ -47,6 +55,8 @@ builder.Services.AddAuthentication(options =>
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    options.RequireHttpsMetadata = true;
+    options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -56,7 +66,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
             System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"])
-        )
+        ),
+        ValidateLifetime = true,
     };
 });
 
@@ -68,7 +79,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -45,7 +45,7 @@ namespace Kiosk.Controllers
 
         // GET PRODUCT CATEGORY BY ID
         [HttpGet]
-        [Route("GetProductCategories/{(CategoryID}")]
+        [Route("GetProductCategories/{CategoryID}")]
         public async Task<ActionResult> GetProductCategories(int CategoryID)
         {
             try
